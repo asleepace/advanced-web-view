@@ -22,6 +22,20 @@ https://github.com/WebKit/WebKit/blob/4bae864b01100e8179cc36948b7d15b7dafe2095/S
 
 - https://developer.apple.com/documentation/webkit/wkaudiovisualmediatypes?language=objc
 
+## Apple Classes
+
+## MPRemoteCommandCenter
+
+> Don’t create instances of this class yourself. Instead, use the sharedCommandCenter method to retrieve the shared command center object. The properties of the shared command center object contain MPRemoteCommand objects that respond to the various kinds of remote control events. You configure these objects to respond to the events you’re interested to handle in your app.
+
+- https://developer.apple.com/documentation/mediaplayer/mpremotecommandcenter?language=objc
+
+## MPRemoteCommand
+
+> The Media Player framework defines a standard set of remote command objects for handling media-related events. When an accessory or iOS user interface generates a remote control event, the system notifies the corresponding command object on the shared MPRemoteCommandCenter instance. That command object executes any attached handlers.
+
+- https://developer.apple.com/documentation/mediaplayer/mpremotecommand?language=objc
+
 ## Debugging
 
 These are all the notification events which are sent when the application goes to the background.
