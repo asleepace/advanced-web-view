@@ -23,6 +23,8 @@
 
 @implementation ViewController
 
+NSString *JS_PLAY = @"document.getElementsByTagName('video')[0].play();";
+
 @synthesize webView;
 
 - (void)viewDidLoad {
@@ -42,12 +44,23 @@
     NSLog(@"[ViewController] playback error: %@", error.description);
     NSLog(@"[ViewController] activation error: %@", activationError.description);
     [[UIApplication sharedApplication] beginReceivingRemoteControlEvents];
+    [self listToExoticNotifications];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
     [self playInBackground];
     NSLog(@"[vc] viewWillDisappear!");
+}
+
+- (void)listToExoticNotifications {
+    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+    [center addObserver:self selector:@selector(onNotification:) name:nil object:nil];
+    NSLog(@">>> listening to all notifications!");
+}
+
+- (void)onNotification:(NSNotification *)notif {
+    NSLog(@">>> did receive notification: %@", notif.name);
 }
 
 //- (void)playAudio:(NSString *)audioFile {
@@ -75,14 +88,32 @@
     // [self navigateTo:@"https://www.youtube.com/watch?v=PiIQlwGVxxA"];
     // [self navigateTo:@"https://twitter.com/i/status/1790732405415776365"];
     // [self navigateTo:@"https://padlet.com/starkindustries/my-fierce-padlet-hlfos2yon4l5s4jy"];
-    [self navigateTo:@"https://d.dlabs.me/test/mp3-player.html"];
+    // [self navigateTo:@"https://d.dlabs.me/test/mp3-player.html"];
     // [self playAudio:@"https://d.dlabs.me/test/come_around.mp4"];
+    
+    NSBundle *bundle = [NSBundle mainBundle];
+    NSURL *localUrl = [bundle URLForResource:@"mp3-player" withExtension:@"html"];
+    NSLog(@"[vc] local url %@", localUrl);
+    [self navigateTo:localUrl.absoluteString];
+    [self.webView addBackgroundNotification];
+    [self noListen: self.view];
+    
+    
+    [[NSNotificationCenter defaultCenter] removeObserver:self.webView];
+    
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    [self noListen:self.webView];
 }
 
 - (void)navigateTo:(NSString *)urlString {
     NSURL *url = [NSURL URLWithString:urlString];
     NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:url];
     [self.webView loadRequest:request.copy];
+    NSLog(@"\n\n\n\n\$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n\n\n");
+    [self noListen:self.webView];
 }
 
 - (void)initializeWebView {
@@ -108,17 +139,10 @@
 
     [self.webView setInspectable:true];
     [self.view addSubview:self.webView];
+    [self.webView listSelectors];
     
     // jsRunLoop = [NSTimer timerWithTimeInterval:0.2 target:self selector:@selector(playInBackground) userInfo:nil repeats:true];
     // [[NSRunLoop currentRunLoop] addTimer:jsRunLoop forMode:NSRunLoopCommonModes];
-}
-
-- (void)playInBackground {
-    NSLog(@"[vc] playInBackground!");
-    [self.webView evaluateJavaScript:@"document.getElementsByTagName('video')[0].play();" completionHandler:^(id value, NSError *error) {
-        if (error) NSLog(@"[js] error: %@", error.localizedDescription);
-        if (value) NSLog(@"[js] play: %@", value);
-    }];
 }
 
 - (WKWebpagePreferences *)webpagePreferences {
@@ -137,6 +161,60 @@
 - (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction preferences:(WKWebpagePreferences *)preferences decisionHandler:(void (^)(WKNavigationActionPolicy, WKWebpagePreferences * _Nonnull))decisionHandler {
     NSLog(@"decide policy for: %@", navigationAction.debugDescription);
     decisionHandler(WKNavigationActionPolicyAllow, preferences);
+}
+
+- (void)playInBackground {
+    return;
+    NSString *JS_PLAY = @"document.getElementsByTagName('video')[0].play();";
+    [self.webView evaluateJavaScript:JS_PLAY completionHandler:^(id value, NSError *error) {
+        if (error) NSLog(@"[js] error: %@", error.localizedDescription);
+    }];
+}
+
+- (void)removeObservers {
+    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+    NSLog(@"[vc] removing notifications: %@", center.debugDescription);
+    
+    // [center postNotification:UIApplicationWillEnterForegroundNotification];
+}
+
+- (void)noListen:(UIView *)view {
+    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+//    NSLog(@"[vc] removing notifications: %@", center.debugDescription);
+    
+//    [center removeObserver:view forKeyPath:UIApplicationDidEnterBackgroundNotification];
+    
+    SEL sel = NSSelectorFromString(@"_applicationDidEnterBackground");
+    
+    // NSLog(@"view: %@", view);
+    //NSLog(@"class %@", [view class]);
+    // NSLog(@"- - - - - - - - - - - - - - ");
+    
+    if ([view respondsToSelector:sel]) {
+        NSLog(@"%@ responds to selector!", [view class]);
+    }
+    
+    Class subViewClass = [view class];
+    
+    if ([[view description] containsString:@"WK"]) {
+        NSLog(@"- + - + - + - + - + - + - + - + - + - + - + -");
+        NSLog(@"@ removed notification on WKContent: %@", view);
+        NSLog(@"@ with object: %@", [UIApplication sharedApplication]);
+        NSLog(@"@ for name: %@", UIApplicationDidEnterBackgroundNotification);
+        [center removeObserver:view];
+        [center removeObserver:view name:UIApplicationDidEnterBackgroundNotification object:[UIApplication sharedApplication]];
+        [center removeObserver:view name:UIApplicationWillResignActiveNotification object:[UIApplication sharedApplication]];
+        NSLog(@"- + - + - + - + - + - + - + - + - + - + - + -");
+    }
+
+    [center removeObserver:view];
+    [center removeObserver:view name:UIWindowDidBecomeHiddenNotification object:[UIApplication sharedApplication]];
+    
+    for (UIView *subView in view.subviews) {
+        NSLog(@"removing notification on: %@", [subView class]);
+        [center removeObserver:subView];
+        [self noListen:subView];
+    }
 }
 
 @end

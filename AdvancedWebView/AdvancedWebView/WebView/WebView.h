@@ -12,6 +12,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface WebView : WKWebView
 
+- (void)listSelectors;
+- (void)addBackgroundNotification;
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -16,6 +16,9 @@
 		2624B6EC2BF5861400AD08AD /* Base in Resources */ = {isa = PBXBuildFile; fileRef = 2624B6EB2BF5861400AD08AD /* Base */; };
 		2624B6EF2BF5861400AD08AD /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2624B6EE2BF5861400AD08AD /* main.m */; };
 		2624B6F72BF5866300AD08AD /* WebView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2624B6F62BF5866300AD08AD /* WebView.m */; };
+		264A412C2BF73F4900DC3FF1 /* come_around.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 264A412B2BF73F4900DC3FF1 /* come_around.mp4 */; };
+		264A412E2BF73F5C00DC3FF1 /* mp3-player.html in Resources */ = {isa = PBXBuildFile; fileRef = 264A412D2BF73F5C00DC3FF1 /* mp3-player.html */; };
+		264A41302BF73F6500DC3FF1 /* background-audio.js in Resources */ = {isa = PBXBuildFile; fileRef = 264A412F2BF73F6500DC3FF1 /* background-audio.js */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,6 +37,9 @@
 		2624B6EE2BF5861400AD08AD /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		2624B6F52BF5866300AD08AD /* WebView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WebView.h; sourceTree = "<group>"; };
 		2624B6F62BF5866300AD08AD /* WebView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WebView.m; sourceTree = "<group>"; };
+		264A412B2BF73F4900DC3FF1 /* come_around.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = come_around.mp4; sourceTree = "<group>"; };
+		264A412D2BF73F5C00DC3FF1 /* mp3-player.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "mp3-player.html"; sourceTree = "<group>"; };
+		264A412F2BF73F6500DC3FF1 /* background-audio.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "background-audio.js"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -66,6 +72,7 @@
 		2624B6D82BF5861300AD08AD /* AdvancedWebView */ = {
 			isa = PBXGroup;
 			children = (
+				264A412A2BF73F3300DC3FF1 /* HTML */,
 				2624B6D92BF5861300AD08AD /* AppDelegate.h */,
 				2624B6DA2BF5861300AD08AD /* AppDelegate.m */,
 				2624B6DF2BF5861300AD08AD /* ViewController.h */,
@@ -98,6 +105,16 @@
 				2624B6F62BF5866300AD08AD /* WebView.m */,
 			);
 			path = WebView;
+			sourceTree = "<group>";
+		};
+		264A412A2BF73F3300DC3FF1 /* HTML */ = {
+			isa = PBXGroup;
+			children = (
+				264A412F2BF73F6500DC3FF1 /* background-audio.js */,
+				264A412D2BF73F5C00DC3FF1 /* mp3-player.html */,
+				264A412B2BF73F4900DC3FF1 /* come_around.mp4 */,
+			);
+			path = HTML;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -159,7 +176,10 @@
 			files = (
 				2624B6E92BF5861400AD08AD /* Assets.xcassets in Resources */,
 				2624B6EC2BF5861400AD08AD /* Base in Resources */,
+				264A412E2BF73F5C00DC3FF1 /* mp3-player.html in Resources */,
+				264A412C2BF73F4900DC3FF1 /* come_around.mp4 in Resources */,
 				2624B6E42BF5861300AD08AD /* Base in Resources */,
+				264A41302BF73F6500DC3FF1 /* background-audio.js in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
