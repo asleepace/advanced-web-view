@@ -9,11 +9,13 @@
 #import <AVFAudio/AVFAudio.h>
 #import <AudioToolbox/AudioToolbox.h>
 #import <AVFoundation/AVFoundation.h>
+#import <MediaPlayer/MediaPlayer.h>
 #import "WebView.h"
 
 @interface ViewController () <WKUIDelegate, WKNavigationDelegate, AVAudioPlayerDelegate>
 {
     NSTimer *jsRunLoop;
+    MPNowPlayingSession *mediaPlayerSession;
 }
 
 @property (strong, nonatomic) AVAudioSession *session;
@@ -45,12 +47,28 @@ NSString *JS_PLAY = @"document.getElementsByTagName('video')[0].play();";
     NSLog(@"[ViewController] activation error: %@", activationError.description);
     [[UIApplication sharedApplication] beginReceivingRemoteControlEvents];
     [self listToExoticNotifications];
+    [self commandCenter];
+    [self removeItemsOnApplication];
+    
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
     [self playInBackground];
-    NSLog(@"[vc] viewWillDisappear!");
+}
+
+- (void)commandCenter {
+    MPRemoteCommandCenter *cmd = [MPRemoteCommandCenter sharedCommandCenter];
+    NSLog(@"[CommandCenter] command: %@", cmd.debugDescription);
+    [[NSNotificationCenter defaultCenter] removeObserver:cmd];
+    NSLog(@"[CommandCenter] disabling pause!");
+    [cmd.pauseCommand setEnabled:false];
+}
+
+
+- (void)mediaRemotePlayer {
+    AVAudioSession *avSession = [AVAudioSession sharedInstance];
+    NSLog(@"[MediaPlayer] avSession: %@", avSession.debugDescription);
 }
 
 - (void)listToExoticNotifications {
@@ -59,8 +77,23 @@ NSString *JS_PLAY = @"document.getElementsByTagName('video')[0].play();";
     NSLog(@">>> listening to all notifications!");
 }
 
+- (void)removeItemsOnApplication {
+    UIApplication *app = [UIApplication sharedApplication];
+    [[NSNotificationCenter defaultCenter] removeObserver:app];
+    
+    for (UIWindow *window in app.windows) {
+        NSLog(@">>> app found window: %@", window.description);
+        for (UIView *view in window.subviews) {
+            NSLog(@">>> app found subview: %@", view.description);
+        }
+    }
+}
+
 - (void)onNotification:(NSNotification *)notif {
-    NSLog(@">>> did receive notification: %@", notif.name);
+    NSLog(@">>> did receive notification: %@ on: %@ with: %@", notif.name, notif.object, notif.userInfo);
+    [[NSNotificationCenter defaultCenter] removeObserver:nil name:notif.name object:notif.object];
+    NSLog(@"[vc] MediaPlayer now playing: %@", [[MPNowPlayingInfoCenter defaultCenter] nowPlayingInfo]);
+
 }
 
 //- (void)playAudio:(NSString *)audioFile {
@@ -100,20 +133,25 @@ NSString *JS_PLAY = @"document.getElementsByTagName('video')[0].play();";
     
     
     [[NSNotificationCenter defaultCenter] removeObserver:self.webView];
-    
 }
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
     [self noListen:self.webView];
+    
+    NSLog(@"[vc] MediaPlayer now playing: %@", [[MPNowPlayingInfoCenter defaultCenter] nowPlayingInfo]);
+    NSLog(@"[vc] viewWillDisappear!");
 }
 
 - (void)navigateTo:(NSString *)urlString {
     NSURL *url = [NSURL URLWithString:urlString];
     NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:url];
     [self.webView loadRequest:request.copy];
-    NSLog(@"\n\n\n\n\$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n\n\n");
     [self noListen:self.webView];
+    
+    [NSTimer timerWithTimeInterval:3.0 repeats:false block:^(NSTimer * _Nonnull timer) {
+        
+    }];
 }
 
 - (void)initializeWebView {
@@ -195,6 +233,11 @@ NSString *JS_PLAY = @"document.getElementsByTagName('video')[0].play();";
     }
     
     Class subViewClass = [view class];
+    
+    if ([[view description] containsString:@"WKVisibilityPropagationView"]) {
+        NSLog(@"# removing WKVisibilityPropagationView from superview!");
+        [view removeFromSuperview];
+    }
     
     if ([[view description] containsString:@"WK"]) {
         NSLog(@"- + - + - + - + - + - + - + - + - + - + - + -");

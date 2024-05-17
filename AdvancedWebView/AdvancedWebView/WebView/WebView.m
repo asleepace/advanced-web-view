@@ -79,16 +79,16 @@ void SwizzleClassMethod(Class c, SEL orig, SEL new) {
             
             NSLog(@"methodOld %@", methodOld);
             NSLog(@"methodNew %@", methodNew);
-            NSLog(@"implementation %@", implementation);
-            
-            NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
-            
+                        
             NSLog(@"observation info: %@", [view observationInfo]);
             
             [[NSNotificationCenter defaultCenter] removeObserver:view name:UIApplicationDidEnterBackgroundNotification object:[UIApplication sharedApplication]];
             [[NSNotificationCenter defaultCenter] removeObserver:view name:UIApplicationDidEnterBackgroundNotification object:view];
             [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationDidEnterBackgroundNotification object:view];
             [[NSNotificationCenter defaultCenter] removeObserver:view];
+            [[NSNotificationCenter defaultCenter] removeObserver:view name:UIApplicationWillResignActiveNotification object:nil];
+            [[NSNotificationCenter defaultCenter] removeObserver:view name:@"_MRMediaRemotePlayerIsPlayingDidChangeNotification" object:nil];
+            
             
             SwizzleClassMethod(class, enterBackground, @selector(_applicationDidEnterBackground:));
             

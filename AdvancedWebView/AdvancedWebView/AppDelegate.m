@@ -39,6 +39,7 @@
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {
+    NSLog(@"[delegate] application will resign active!");
     [self.vc playInBackground];
 }
 

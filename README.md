@@ -36,6 +36,12 @@ https://github.com/WebKit/WebKit/blob/4bae864b01100e8179cc36948b7d15b7dafe2095/S
 
 - https://developer.apple.com/documentation/mediaplayer/mpremotecommand?language=objc
 
+## MPNowPlaying
+
+> Ensure your app is eligible to become the Now Playing app by adopting best practices for providing Now Playing info and registering for remote command center actions.
+
+https://developer.apple.com/documentation/mediaplayer/becoming_a_now_playable_app?language=objc
+
 ## Debugging
 
 These are all the notification events which are sent when the application goes to the background.
