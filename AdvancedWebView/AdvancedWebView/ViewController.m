@@ -10,9 +10,11 @@
 #import <AudioToolbox/AudioToolbox.h>
 #import <AVFoundation/AVFoundation.h>
 #import <MediaPlayer/MediaPlayer.h>
+#import <objc/runtime.h>
+#import "Inspector.h"
 #import "WebView.h"
 
-@interface ViewController () <WKUIDelegate, WKNavigationDelegate, AVAudioPlayerDelegate>
+@interface ViewController () <WKUIDelegate, WKNavigationDelegate, MPNowPlayingSessionDelegate, AVAudioPlayerDelegate>
 {
     NSTimer *jsRunLoop;
     MPNowPlayingSession *mediaPlayerSession;
@@ -20,6 +22,7 @@
 
 @property (strong, nonatomic) AVAudioSession *session;
 @property (strong, nonatomic) AVAudioPlayer *player;
+@property (strong, nonatomic) AVAudioEngine *engine;
 
 @end
 
@@ -31,7 +34,10 @@ NSString *JS_PLAY = @"document.getElementsByTagName('video')[0].play();";
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    [self initializeWebView];
     
+    [Inspector selector:self.webView.superclass];
+
     NSError *error = nil;
     
     self.session = [AVAudioSession sharedInstance];
@@ -42,14 +48,17 @@ NSString *JS_PLAY = @"document.getElementsByTagName('video')[0].play();";
           error:&error];
     
     NSError *activationError = nil;
+    [self.session setDelegate:self];
     [self.session setActive: YES error: &activationError];
     NSLog(@"[ViewController] playback error: %@", error.description);
     NSLog(@"[ViewController] activation error: %@", activationError.description);
     [[UIApplication sharedApplication] beginReceivingRemoteControlEvents];
-    [self listToExoticNotifications];
-    [self commandCenter];
-    [self removeItemsOnApplication];
+    // [self listToExoticNotifications];
+    // [self commandCenter];
+    // [self removeItemsOnApplication];
+    [self listToNowPlaying];
     
+    self.engine = [[AVAudioEngine alloc] init];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -57,12 +66,46 @@ NSString *JS_PLAY = @"document.getElementsByTagName('video')[0].play();";
     [self playInBackground];
 }
 
+
+- (void)listToNowPlaying {
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onPlaying:) name:@"_MRMediaRemotePlayerPlaybackStateDidChangeNotification" object:nil];
+}
+
+- (void)onPlaying:(NSNotification *)notif {
+    NSDictionary *userInfo = [notif userInfo];
+    NSInteger playbackStatus = [[userInfo valueForKey:@"kMRMediaRemotePlaybackStateUserInfoKey"] integerValue];
+        
+    if (playbackStatus != MPNowPlayingPlaybackStatePaused) return;
+    
+    NSLog(@">> PAUSED: %@", userInfo); // PAUSED = 2
+    NSLog(@">> onPlaying called: %@", notif.debugDescription);
+    
+    if ([userInfo valueForKey:@"kMRNowPlayingPlayerUserInfoKey"]) {
+        id nowPlaying = [userInfo valueForKey:@"kMRNowPlayingPlayerUserInfoKey"];
+        NSLog(@">> nowPlaying: %@", nowPlaying);
+        NSLog(@">> nowPlaying class: %@", [nowPlaying class]);
+        NSLog(@">> nowPlaying description: %@", [nowPlaying debugDescription]);
+        
+        //[Inspector selector:nowPlaying];
+        
+        SEL selSetDisplayName = NSSelectorFromString(@"setDisplayName:");
+        
+        if ([nowPlaying respondsToSelector:selSetDisplayName]) {
+            [nowPlaying performSelector:selSetDisplayName withObject:@"Hacked Music Player"];
+            NSLog(@">> nowPlaying performed selector!");
+        }
+    }
+}
+
+
 - (void)commandCenter {
     MPRemoteCommandCenter *cmd = [MPRemoteCommandCenter sharedCommandCenter];
     NSLog(@"[CommandCenter] command: %@", cmd.debugDescription);
     [[NSNotificationCenter defaultCenter] removeObserver:cmd];
     NSLog(@"[CommandCenter] disabling pause!");
     [cmd.pauseCommand setEnabled:false];
+    
+    
 }
 
 
@@ -116,7 +159,6 @@ NSString *JS_PLAY = @"document.getElementsByTagName('video')[0].play();";
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    [self initializeWebView];
     NSLog(@"[ViewController] viewWillAppear!");
     // [self navigateTo:@"https://www.youtube.com/watch?v=PiIQlwGVxxA"];
     // [self navigateTo:@"https://twitter.com/i/status/1790732405415776365"];
@@ -152,6 +194,10 @@ NSString *JS_PLAY = @"document.getElementsByTagName('video')[0].play();";
     [NSTimer timerWithTimeInterval:3.0 repeats:false block:^(NSTimer * _Nonnull timer) {
         
     }];
+}
+
+- (void)audioPlayerDidFinishPlaying:(AVAudioPlayer *)player successfully:(BOOL)flag {
+    NSLog(@">> AudioPlayer audioPlayerDidFinishPlaying %@", flag ? @"true" : @"false");
 }
 
 - (void)initializeWebView {
@@ -259,5 +305,19 @@ NSString *JS_PLAY = @"document.getElementsByTagName('video')[0].play();";
         [self noListen:subView];
     }
 }
+
+
+
+#pragma mark - Now Playing
+
+
+- (void)nowPlayingSessionDidChangeActive:(MPNowPlayingSession *)nowPlayingSession {
+    NSLog(@">> nowPlayingSessionDidChangeActive %@", [nowPlayingSession debugDescription]);
+}
+
+- (void)nowPlayingSessionDidChangeCanBecomeActive:(MPNowPlayingSession *)nowPlayingSession {
+    NSLog(@">> nowPlayingSessionDidChangeCanBecomeActive %@", [nowPlayingSession debugDescription]);
+}
+
 
 @end
